@@ -28,21 +28,23 @@ def generate_formula
       desc "Local AI intelligence layer - autonomous AI model proxy and orchestrator"
       homepage "https://github.com/tingly-dev/tingly-box"
 
+      depends_on "unzip" => :build
+
       on_macos do
         on_arm do
-          url "https://github.com/tingly-dev/tingly-box/releases/download/#{VERSION}/tingly-box-darwin-arm64.tar.gz"
+          url "https://github.com/tingly-dev/tingly-box/releases/download/#{VERSION}/tingly-box-macos-arm64.zip"
           sha256 "#{SHA256[:darwin_arm64]}"
         end
 
         on_intel do
-          url "https://github.com/tingly-dev/tingly-box/releases/download/#{VERSION}/tingly-box-darwin-amd64.tar.gz"
+          url "https://github.com/tingly-dev/tingly-box/releases/download/#{VERSION}/tingly-box-macos-amd64.zip"
           sha256 "#{SHA256[:darwin_amd64]}"
         end
       end
 
       on_linux do
         on_intel do
-          url "https://github.com/tingly-dev/tingly-box/releases/download/#{VERSION}/tingly-box-linux-amd64.tar.gz"
+          url "https://github.com/tingly-dev/tingly-box/releases/download/#{VERSION}/tingly-box-linux-amd64.zip"
           sha256 "#{SHA256[:linux_amd64]}"
         end
       end
@@ -52,7 +54,7 @@ def generate_formula
       end
 
       test do
-        assert_match "#{VERSION}", shell_output("\#{bin}/tingly-box version 2>&1", 1)
+        assert_match "#{VERSION}", shell_output("#{bin}/tingly-box --version 2>&1", 1)
       end
     end
   RUBY
