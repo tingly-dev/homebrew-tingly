@@ -44,9 +44,9 @@ jobs:
           # Check if required assets exist
           echo "Checking required assets..."
           ASSETS=(
-            "tingly-box-darwin-arm64.tar.gz"
-            "tingly-box-darwin-amd64.tar.gz"
-            "tingly-box-linux-amd64.tar.gz"
+            "tingly-box-macos-arm64.zip"
+            "tingly-box-macos-amd64.zip"
+            "tingly-box-linux-amd64.zip"
           )
 
           for asset in "${ASSETS[@]}"; do
@@ -69,8 +69,8 @@ jobs:
           download_and_hash() {
             local platform=$1
             local arch=$2
-            local url="https://github.com/tingly-dev/tingly-box/releases/download/${VERSION}/tingly-box-${platform}-${arch}.tar.gz"
-            local filename="tingly-box-${platform}-${arch}.tar.gz"
+            local url="https://github.com/tingly-dev/tingly-box/releases/download/${VERSION}/tingly-box-${platform}-${arch}.zip"
+            local filename="tingly-box-${platform}-${arch}.zip"
 
             curl -sSL -o "$filename" "$url"
             local hash=$(shasum -a 256 "$filename" | awk '{print $1}')
@@ -78,8 +78,8 @@ jobs:
             echo "$hash"
           }
 
-          SHA_DARWIN_ARM64=$(download_and_hash "darwin" "arm64")
-          SHA_DARWIN_AMD64=$(download_and_hash "darwin" "amd64")
+          SHA_DARWIN_ARM64=$(download_and_hash "macos" "arm64")
+          SHA_DARWIN_AMD64=$(download_and_hash "macos" "amd64")
           SHA_LINUX_AMD64=$(download_and_hash "linux" "amd64")
 
           ruby Formula/generate.rb \
