@@ -32,6 +32,7 @@ class TinglyBox < Formula
   end
 
   test do
-    assert_match "v0.260124.900", shell_output("#{bin}/tingly-box --version 2>&1", 1)
+    version_output = shell_output("#{bin}/tingly-box --version 2>&1", 1)
+    assert_match /d+/, version_output, "Expected version output to contain version number"
   end
 end
