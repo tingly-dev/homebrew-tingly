@@ -18,7 +18,10 @@ jobs:
       - name: Get latest release
         id: release
         run: |
-          LATEST=$(gh release list --repo tingly-dev/tingly-box --limit 1 --json tagName,name --jq '.[0].tagName')
+          # Get tags matching v0.xxx.yyy-zzz pattern, sort by version, get latest
+          LATEST=$(gh release list --repo tingly-dev/tingly-box --limit 100 \
+            --json tagName,name \
+            --jq '[.[] | select(.tagName | test("^v0\\.[0-9]+\\.[0-9]+-[0-9]+$"))] | .[0].tagName')
           echo "tag=$LATEST" >> $GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
