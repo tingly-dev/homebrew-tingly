@@ -6,7 +6,7 @@ class TinglyBox < Formula
   desc "Local AI intelligence layer - autonomous AI model proxy and orchestrator"
   homepage "https://github.com/tingly-dev/tingly-box"
 
-  depends_on "unzip" => :build
+  # depends_on "unzip" => :build
 
   on_macos do
     on_arm do
