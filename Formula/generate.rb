@@ -6,7 +6,7 @@
 
 require 'fileutils'
 
-VERSION = ENV['VERSION'] || 'v1.6.1'
+VERSION = ENV['VERSION'] || (raise "VERSION environment variable is required. Usage: VERSION=<version> ruby Formula/generate.rb")
 # Script is at Formula/generate.rb, formula goes in same directory
 FORMULA_DIR = __dir__
 FORMULA_FILE = File.join(FORMULA_DIR, 'tingly-box.rb')
