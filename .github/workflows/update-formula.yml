@@ -82,11 +82,13 @@ jobs:
           SHA_DARWIN_AMD64=$(download_and_hash "macos" "amd64")
           SHA_LINUX_AMD64=$(download_and_hash "linux" "amd64")
 
-          ruby Formula/generate.rb \
-            VERSION="$VERSION" \
-            SHA256_DARWIN_ARM64="$SHA_DARWIN_ARM64" \
-            SHA256_DARWIN_AMD64="$SHA_DARWIN_AMD64" \
-            SHA256_LINUX_AMD64="$SHA_LINUX_AMD64"
+          export VERSION="$VERSION"
+          export SHA256_DARWIN_ARM64="$SHA_DARWIN_ARM64"
+          export SHA256_DARWIN_AMD64="$SHA_DARWIN_AMD64"
+          export SHA256_LINUX_AMD64="$SHA_LINUX_AMD64"
+
+          echo "Generating formula with VERSION=$VERSION"
+          ruby Formula/generate.rb
 
       - name: Check for changes
         id: check
