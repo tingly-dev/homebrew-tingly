@@ -11,7 +11,7 @@ This directory contains the Homebrew formula for installing Tingly-Box.
 
 ```bash
 # Tap the repository
-brew tap tingly-dev/homebrew-tap
+brew tap tingly-dev/tap
 
 # Install
 brew install tingly-box

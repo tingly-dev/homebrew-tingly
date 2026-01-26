@@ -106,7 +106,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Formula/tingly-box.rb
           git commit -m "Update formula to ${{ steps.release.outputs.tag }}"
-          gh repo set-default tingly-dev/homebrew-tap
-          git push --repo=https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/tingly-dev/homebrew-tap.git
+          gh repo set-default tingly-dev/tap
+          git push --repo=https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/tingly-dev/tap.git
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

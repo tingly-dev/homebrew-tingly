@@ -6,7 +6,7 @@ Homebrew tap for [Tingly-Box](https://github.com/tingly-dev/tingly-box) - Local 
 
 ```bash
 # Tap the repository
-brew tap tingly-dev/homebrew-tap
+brew tap tingly-dev/tap
 
 # Install tingly-box
 brew install tingly-box
@@ -25,7 +25,7 @@ brew upgrade tingly-box
 
 ```bash
 brew uninstall tingly-box
-brew untap tingly-dev/homebrew-tap
+brew untap tingly-dev/tap
 ```
 
 ## Development
