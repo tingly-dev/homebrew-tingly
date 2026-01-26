@@ -6,21 +6,23 @@ class TinglyBox < Formula
   desc "Local AI intelligence layer - autonomous AI model proxy and orchestrator"
   homepage "https://github.com/tingly-dev/tingly-box"
 
+  depends_on "unzip" => :build
+
   on_macos do
     on_arm do
-      url "https://github.com/tingly-dev/tingly-box/releases/download/v1.6.1/tingly-box-darwin-arm64.tar.gz"
+      url "https://github.com/tingly-dev/tingly-box/releases/download/v1.6.1/tingly-box-macos-arm64.zip"
       sha256 ""
     end
 
     on_intel do
-      url "https://github.com/tingly-dev/tingly-box/releases/download/v1.6.1/tingly-box-darwin-amd64.tar.gz"
+      url "https://github.com/tingly-dev/tingly-box/releases/download/v1.6.1/tingly-box-macos-amd64.zip"
       sha256 ""
     end
   end
 
   on_linux do
     on_intel do
-      url "https://github.com/tingly-dev/tingly-box/releases/download/v1.6.1/tingly-box-linux-amd64.tar.gz"
+      url "https://github.com/tingly-dev/tingly-box/releases/download/v1.6.1/tingly-box-linux-amd64.zip"
       sha256 ""
     end
   end
@@ -30,6 +32,6 @@ class TinglyBox < Formula
   end
 
   test do
-    assert_match "v1.6.1", shell_output("#{bin}/tingly-box version 2>&1", 1)
+    assert_match "v1.6.1", shell_output("#{bin}/tingly-box --version 2>&1", 1)
   end
 end
