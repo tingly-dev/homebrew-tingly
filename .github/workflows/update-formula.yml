@@ -1,0 +1,68 @@
+name: Update Formula on Release
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'  # Daily check
+
+jobs:
+  update-formula:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get latest release
+        id: release
+        run: |
+          LATEST=$(gh release list --repo tingly-dev/tingly-box --limit 1 --json tagName,name --jq '.[0].tagName')
+          echo "tag=$LATEST" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate formula
+        run: |
+          VERSION=${{ steps.release.outputs.tag }}
+
+          # Download assets and compute SHA256
+          download_and_hash() {
+            local platform=$1
+            local arch=$2
+            local url="https://github.com/tingly-dev/tingly-box/releases/download/${VERSION}/tingly-box-${platform}-${arch}.tar.gz"
+            local filename="tingly-box-${platform}-${arch}.tar.gz"
+
+            curl -sSL -o "$filename" "$url"
+            local hash=$(shasum -a 256 "$filename" | awk '{print $1}')
+            rm "$filename"
+            echo "$hash"
+          }
+
+          SHA_DARWIN_ARM64=$(download_and_hash "darwin" "arm64")
+          SHA_DARWIN_AMD64=$(download_and_hash "darwin" "amd64")
+          SHA_LINUX_AMD64=$(download_and_hash "linux" "amd64")
+
+          ruby Formula/generate.rb \
+            VERSION="$VERSION" \
+            SHA256_DARWIN_ARM64="$SHA_DARWIN_ARM64" \
+            SHA256_DARWIN_AMD64="$SHA_DARWIN_AMD64" \
+            SHA256_LINUX_AMD64="$SHA_LINUX_AMD64"
+
+      - name: Check for changes
+        id: check
+        run: |
+          if git diff --quiet Formula/tingly-box.rb; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/tingly-box.rb
+          git commit -m "Update formula to ${{ steps.release.outputs.tag }}"
+          git push
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
