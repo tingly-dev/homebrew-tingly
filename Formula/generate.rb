@@ -54,7 +54,7 @@ def generate_formula
       end
 
       test do
-        assert_match "#{VERSION}", shell_output("#{bin}/tingly-box --version 2>&1", 1)
+        assert_match "#{VERSION}", shell_output("\#{bin}/tingly-box --version 2>&1", 1)
       end
     end
   RUBY
