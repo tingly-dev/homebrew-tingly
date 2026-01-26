@@ -10,20 +10,20 @@ class TinglyBox < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/tingly-dev/tingly-box/releases/download/v1.6.1/tingly-box-macos-arm64.zip"
-      sha256 ""
+      url "https://github.com/tingly-dev/tingly-box/releases/download/v0.260124.900/tingly-box-macos-arm64.zip"
+      sha256 "f510ea846acbefc17b1adea8174f8cc74de43e26e3a9781955fa33e6fc56e1c3"
     end
 
     on_intel do
-      url "https://github.com/tingly-dev/tingly-box/releases/download/v1.6.1/tingly-box-macos-amd64.zip"
-      sha256 ""
+      url "https://github.com/tingly-dev/tingly-box/releases/download/v0.260124.900/tingly-box-macos-amd64.zip"
+      sha256 "311953057745c6babf7d22e044c7de0aadf6c4c4a75d0826b4f9fbde5edcafba"
     end
   end
 
   on_linux do
     on_intel do
-      url "https://github.com/tingly-dev/tingly-box/releases/download/v1.6.1/tingly-box-linux-amd64.zip"
-      sha256 ""
+      url "https://github.com/tingly-dev/tingly-box/releases/download/v0.260124.900/tingly-box-linux-amd64.zip"
+      sha256 "1983649ad07489dd28f1d828db0dcb24eb8fe59b1176e77cb583ac013207e9f3"
     end
   end
 
@@ -32,6 +32,6 @@ class TinglyBox < Formula
   end
 
   test do
-    assert_match "v1.6.1", shell_output("#{bin}/tingly-box --version 2>&1", 1)
+    assert_match "v0.260124.900", shell_output("#{bin}/tingly-box --version 2>&1", 1)
   end
 end
