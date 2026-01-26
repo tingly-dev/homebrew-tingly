@@ -28,7 +28,14 @@ class TinglyBox < Formula
   end
 
   def install
-    bin.install "tingly-box"
+    # Zip extracts to platform-specific binary names, install with standard name
+    if Hardware::CPU.arm?
+      bin.install "tingly-box-macos-arm64" => "tingly-box"
+    elsif Hardware::CPU.intel?
+      bin.install "tingly-box-macos-amd64" => "tingly-box"
+    elsif OS.linux?
+      bin.install "tingly-box-linux-amd64" => "tingly-box"
+    end
   end
 
   test do
