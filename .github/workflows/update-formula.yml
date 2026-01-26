@@ -2,8 +2,11 @@ name: Update Formula on Release
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *'  # Daily check
+    inputs:
+      tag:
+        description: 'Release tag to update (e.g., v0.260.124-900)'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -15,14 +18,46 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Get latest release
-        id: release
+      - name: Validate tag
         run: |
-          # Get tags matching v0.xxx.yyy-zzz pattern, sort by version, get latest
-          LATEST=$(gh release list --repo tingly-dev/tingly-box --limit 100 \
-            --json tagName,name \
-            --jq '[.[] | select(.tagName | test("^v0\\.[0-9]+\\.[0-9]+-[0-9]+$"))] | .[0].tagName')
-          echo "tag=$LATEST" >> $GITHUB_OUTPUT
+          TAG="${{ inputs.tag }}"
+          if [ -z "$TAG" ]; then
+            echo "Error: Tag input is required"
+            exit 1
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Using tag: $TAG"
+        id: release
+
+      - name: Check release exists
+        run: |
+          TAG="${{ steps.release.outputs.tag }}"
+
+          # Check if release exists
+          echo "Checking if release $TAG exists..."
+          if ! gh release view "$TAG" --repo tingly-dev/tingly-box >/dev/null 2>&1; then
+            echo "Error: Release $TAG does not exist"
+            exit 1
+          fi
+          echo "✓ Release $TAG exists"
+
+          # Check if required assets exist
+          echo "Checking required assets..."
+          ASSETS=(
+            "tingly-box-darwin-arm64.tar.gz"
+            "tingly-box-darwin-amd64.tar.gz"
+            "tingly-box-linux-amd64.tar.gz"
+          )
+
+          for asset in "${ASSETS[@]}"; do
+            if ! gh release view "$TAG" --repo tingly-dev/tingly-box --json assets --jq ".assets[] | select(.name == \"$asset\") | .name" | grep -q "$asset"; then
+              echo "Error: Required asset $asset not found in release $TAG"
+              exit 1
+            fi
+            echo "✓ Found $asset"
+          done
+
+          echo "✓ All validations passed"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
