@@ -15,7 +15,8 @@ FORMULA_FILE = File.join(FORMULA_DIR, 'tingly-box.rb')
 SHA256 = {
   darwin_arm64: ENV['SHA256_DARWIN_ARM64'] || '',
   darwin_amd64: ENV['SHA256_DARWIN_AMD64'] || '',
-  linux_amd64: ENV['SHA256_LINUX_AMD64'] || ''
+  linux_amd64: ENV['SHA256_LINUX_AMD64'] || '',
+  linux_arm64: ENV['SHA256_LINUX_ARM64'] || ''
 }.freeze
 
 def generate_formula
@@ -47,6 +48,11 @@ def generate_formula
           url "https://github.com/tingly-dev/tingly-box/releases/download/#{VERSION}/tingly-box-linux-amd64.zip"
           sha256 "#{SHA256[:linux_amd64]}"
         end
+
+        on_arm do
+          url "https://github.com/tingly-dev/tingly-box/releases/download/#{VERSION}/tingly-box-linux-arm64.zip"
+          sha256 "#{SHA256[:linux_arm64]}"
+        end
       end
 
       def install
@@ -58,13 +64,18 @@ def generate_formula
             bin.install "tingly-box-macos-amd64" => "tingly-box"
           end
         else
-          bin.install "tingly-box-linux-amd64" => "tingly-box"
+          # Linux
+          if Hardware::CPU.arm?
+            bin.install "tingly-box-linux-arm64" => "tingly-box"
+          else
+            bin.install "tingly-box-linux-amd64" => "tingly-box"
+          end
         end
       end
 
       test do
         version_output = shell_output("\#{bin}/tingly-box version 2>&1", 1)
-        assert_match /\d+/, version_output, "Expected version output to contain version number"
+        assert_match /\\d+/, version_output, "Expected version output to contain version number"
       end
     end
   RUBY
