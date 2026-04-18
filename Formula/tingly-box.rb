@@ -10,20 +10,25 @@ class TinglyBox < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/tingly-dev/tingly-box/releases/download/v0.260124.900/tingly-box-macos-arm64.zip"
-      sha256 "f510ea846acbefc17b1adea8174f8cc74de43e26e3a9781955fa33e6fc56e1c3"
+      url "https://github.com/tingly-dev/tingly-box/releases/download/v0.260415.1045-hotfix/tingly-box-macos-arm64.zip"
+      sha256 "30fe26f81d7b10ec6c37d984aad6d20daa9a544d5d9ab613057080d4dcdf19c4"
     end
 
     on_intel do
-      url "https://github.com/tingly-dev/tingly-box/releases/download/v0.260124.900/tingly-box-macos-amd64.zip"
-      sha256 "311953057745c6babf7d22e044c7de0aadf6c4c4a75d0826b4f9fbde5edcafba"
+      url "https://github.com/tingly-dev/tingly-box/releases/download/v0.260415.1045-hotfix/tingly-box-macos-amd64.zip"
+      sha256 "71328f27c9e43cd57bdf076373fd297076095826aaa6d95d96b26f55b54889d8"
     end
   end
 
   on_linux do
     on_intel do
-      url "https://github.com/tingly-dev/tingly-box/releases/download/v0.260124.900/tingly-box-linux-amd64.zip"
-      sha256 "1983649ad07489dd28f1d828db0dcb24eb8fe59b1176e77cb583ac013207e9f3"
+      url "https://github.com/tingly-dev/tingly-box/releases/download/v0.260415.1045-hotfix/tingly-box-linux-amd64.zip"
+      sha256 "4dca7e5eb65136a7c0ffbf672e09bb91246d5e07e3884ff87212e1caa01cecf8"
+    end
+
+    on_arm do
+      url "https://github.com/tingly-dev/tingly-box/releases/download/v0.260415.1045-hotfix/tingly-box-linux-arm64.zip"
+      sha256 "38e245fffd8a29dcbb511b0f88e6de318e1afcfd3461266ea9d1492f8d83a9ce"
     end
   end
 
@@ -36,12 +41,17 @@ class TinglyBox < Formula
         bin.install "tingly-box-macos-amd64" => "tingly-box"
       end
     else
-      bin.install "tingly-box-linux-amd64" => "tingly-box"
+      # Linux
+      if Hardware::CPU.arm?
+        bin.install "tingly-box-linux-arm64" => "tingly-box"
+      else
+        bin.install "tingly-box-linux-amd64" => "tingly-box"
+      end
     end
   end
 
   test do
     version_output = shell_output("#{bin}/tingly-box version 2>&1", 1)
-    assert_match /d+/, version_output, "Expected version output to contain version number"
+    assert_match /\d+/, version_output, "Expected version output to contain version number"
   end
 end
