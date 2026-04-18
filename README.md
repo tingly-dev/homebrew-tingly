@@ -11,8 +11,10 @@ brew tap tingly-dev/homebrew-tingly
 # Install tingly-box
 brew install tingly-box
 
-# Start the service
+# Use the full command or alias
 tingly-box start
+# or
+tb start
 ```
 
 > **Note**: Homebrew internally references this as `tingly-dev/tap` (the `homebrew-` prefix is automatically stripped). You may see this name in installation output.

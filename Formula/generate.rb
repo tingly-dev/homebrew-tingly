@@ -59,6 +59,9 @@ def generate_formula
       def install
         # Zip contains binary named "tingly-box", install directly
         bin.install "tingly-box"
+
+        # Create convenience symlink/alias
+        bin.install_symlink "tingly-box" => "tb"
       end
 
       test do
