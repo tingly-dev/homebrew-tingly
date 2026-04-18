@@ -5,6 +5,7 @@
 class TinglyBox < Formula
   desc "Local AI intelligence layer - autonomous AI model proxy and orchestrator"
   homepage "https://github.com/tingly-dev/tingly-box"
+  version "v0.260415.1045-hotfix"
 
   # depends_on "unzip" => :build
 

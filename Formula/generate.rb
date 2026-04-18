@@ -28,6 +28,7 @@ def generate_formula
     class TinglyBox < Formula
       desc "Local AI intelligence layer - autonomous AI model proxy and orchestrator"
       homepage "https://github.com/tingly-dev/tingly-box"
+      version "#{VERSION}"
 
       # depends_on "unzip" => :build
 
