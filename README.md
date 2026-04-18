@@ -15,6 +15,8 @@ brew install tingly-box
 tingly-box start
 ```
 
+> **Note**: Homebrew internally references this as `tingly-dev/tap` (the `homebrew-` prefix is automatically stripped). You may see this name in installation output.
+
 ## Update
 
 ```bash
@@ -30,14 +32,43 @@ brew untap tingly-dev/homebrew-tingly
 
 ## Automated Release Process
 
-This homebrew tap is automatically updated when new releases are published in the [tingly-box repository](https://github.com/tingly-dev/tingly-box).
+This homebrew tap is **manually controlled** in this repository. When you need to update to a new release:
 
-### How It Works
+### Quick Update (Recommended)
 
-1. **Release Creation**: When a new tag is pushed to `tingly-box`, the GitHub Actions workflow builds binaries for all platforms
-2. **Homebrew Trigger**: After the release is created, the workflow automatically triggers the `update-formula.yml` workflow in this repository
-3. **Formula Generation**: The workflow downloads the release assets, calculates SHA256 hashes, and generates the formula
-4. **Auto-Commit**: The updated formula is automatically committed and pushed to this repository
+1. Go to [Actions → Update Formula](https://github.com/tingly-dev/homebrew-tingly/actions/workflows/update-formula.yml)
+2. Click "Run workflow"
+3. Enter the release tag (e.g., `v0.260124.900`)
+4. Click "Run workflow"
+
+The workflow will:
+- Fetch the release from [tingly-box](https://github.com/tingly-dev/tingly-box)
+- Download all platform binaries
+- Calculate SHA256 hashes
+- Generate and commit the formula
+
+### Update with Pull Request
+
+For better control, create a PR first:
+
+1. Run the workflow with "Create PR" enabled
+2. Review the generated formula
+3. Merge when ready
+
+### Command Line Update
+
+```bash
+# Trigger update via GitHub CLI
+gh workflow run update-formula.yml \
+  --repo tingly-dev/homebrew-tingly \
+  -f tag="v0.260124.900"
+
+# Or with PR
+gh workflow run update-formula.yml \
+  --repo tingly-dev/homebrew-tingly \
+  -f tag="v0.260124.900" \
+  -f create_pr=true
+```
 
 ### Supported Platforms
 

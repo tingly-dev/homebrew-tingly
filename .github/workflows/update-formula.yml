@@ -1,17 +1,17 @@
-name: Update Formula on Release
+name: Update Formula
 
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag to update (e.g., v0.260.124-900)'
+        description: 'Release tag from tingly-box (e.g., v0.260124.900)'
         required: true
         type: string
-  repository_dispatch:
-    types: [release-published]
-  push:
-    tags:
-      - 'v*'
+      create_pr:
+        description: 'Create PR instead of direct commit'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -23,61 +23,79 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Determine tag
+      - name: Validate and set tag
         id: release
         run: |
-          TAG=""
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            TAG="${{ inputs.tag }}"
-          elif [ "${{ github.event_name }}" == "push" ]; then
-            TAG="${GITHUB_REF#refs/tags/}"
-          elif [ "${{ github.event_name }}" == "repository_dispatch" ]; then
-            TAG="${{ github.event.client_payload.tag }}"
-          fi
+          TAG="${{ inputs.tag }}"
 
-          if [ -z "$TAG" ]; then
-            echo "Error: Could not determine tag"
+          # Remove 'v' prefix if present for consistency
+          TAG="${TAG#v}"
+
+          # Validate format (basic check)
+          if ! echo "$TAG" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+'; then
+            echo "Error: Invalid tag format. Expected format: v0.260124.900 or 0.260124.900"
             exit 1
           fi
+
+          # Add 'v' prefix for consistency
+          TAG="v${TAG}"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "Using tag: $TAG"
+          echo "✓ Using tag: $TAG"
 
       - name: Check release exists
         run: |
           TAG="${{ steps.release.outputs.tag }}"
 
-          # Check if release exists
-          echo "Checking if release $TAG exists..."
+          echo "Checking if release $TAG exists in tingly-box..."
           if ! gh release view "$TAG" --repo tingly-dev/tingly-box >/dev/null 2>&1; then
-            echo "Error: Release $TAG does not exist"
+            echo "❌ Error: Release $TAG does not exist in tingly-dev/tingly-box"
+            echo ""
+            echo "Available releases:"
+            gh release list --repo tingly-dev/tingly-box -L 5 || true
             exit 1
           fi
-          echo "✓ Release $TAG exists"
+          echo "✓ Release $TAG found"
 
-          # Check if required assets exist
-          echo "Checking required assets..."
+          # Check for required assets
+          echo ""
+          echo "Checking release assets..."
           ASSETS=(
             "tingly-box-macos-arm64.zip"
             "tingly-box-macos-amd64.zip"
             "tingly-box-linux-amd64.zip"
-            "tingly-box-linux-arm64.zip"
           )
 
+          MISSING=0
           for asset in "${ASSETS[@]}"; do
-            if ! gh release view "$TAG" --repo tingly-dev/tingly-box --json assets --jq ".assets[] | select(.name == \"$asset\") | .name" | grep -q "$asset"; then
-              echo "Warning: Asset $asset not found in release $TAG (may be optional)"
+            if gh release view "$TAG" --repo tingly-dev/tingly-box --json assets --jq ".assets[] | select(.name == \"$asset\") | .name" | grep -q "$asset"; then
+              echo "  ✓ $asset"
             else
-              echo "✓ Found $asset"
+              echo "  ✗ $asset (MISSING)"
+              MISSING=1
             fi
           done
 
-          echo "✓ Validation complete"
+          # Check optional assets
+          if gh release view "$TAG" --repo tingly-dev/tingly-box --json assets --jq ".assets[] | select(.name == \"tingly-box-linux-arm64.zip\") | .name" | grep -q "tingly-box-linux-arm64.zip"; then
+            echo "  ✓ tingly-box-linux-arm64.zip (optional)"
+          else
+            echo "  ⚠ tingly-box-linux-arm64.zip (optional, not available)"
+          fi
+
+          if [ $MISSING -eq 1 ]; then
+            echo ""
+            echo "❌ Error: Required assets are missing from the release"
+            exit 1
+          fi
+
+          echo ""
+          echo "✓ All required assets available"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate formula
         run: |
-          VERSION=${{ steps.release.outputs.tag }}
+          VERSION="${{ steps.release.outputs.tag }}"
 
           # Download assets and compute SHA256
           download_and_hash() {
@@ -86,61 +104,108 @@ jobs:
             local url="https://github.com/tingly-dev/tingly-box/releases/download/${VERSION}/tingly-box-${platform}-${arch}.zip"
             local filename="tingly-box-${platform}-${arch}.zip"
 
+            echo -n "  Downloading ${platform}-${arch}... "
             if curl -fsSL -o "$filename" "$url"; then
               local hash=$(shasum -a 256 "$filename" | awk '{print $1}')
               rm "$filename"
+              echo "✓"
               echo "$hash"
             else
+              echo "✗ (not available)"
               echo ""
             fi
           }
 
+          echo "Downloading release assets and calculating SHA256..."
           SHA_DARWIN_ARM64=$(download_and_hash "macos" "arm64")
           SHA_DARWIN_AMD64=$(download_and_hash "macos" "amd64")
           SHA_LINUX_AMD64=$(download_and_hash "linux" "amd64")
           SHA_LINUX_ARM64=$(download_and_hash "linux" "arm64")
 
+          # Validate required hashes
           if [ -z "$SHA_DARWIN_ARM64" ] || [ -z "$SHA_DARWIN_AMD64" ] || [ -z "$SHA_LINUX_AMD64" ]; then
-            echo "Error: Failed to download required assets"
+            echo ""
+            echo "❌ Error: Failed to download required assets"
             exit 1
           fi
 
-          if [ -z "$SHA_LINUX_ARM64" ]; then
-            echo "Warning: Linux ARM64 not available, using empty hash"
-            SHA_LINUX_ARM64=""
-          fi
+          echo ""
+          echo "Generating formula:"
+          echo "  Version: $VERSION"
+          echo "  macOS ARM64:  ${SHA_DARWIN_ARM64:0:16}..."
+          echo "  macOS AMD64:  ${SHA_DARWIN_AMD64:0:16}..."
+          echo "  Linux AMD64:  ${SHA_LINUX_AMD64:0:16}..."
+          echo "  Linux ARM64:  ${SHA_LINUX_ARM64:+${SHA_LINUX_ARM64:0:16}...}"
+          echo "  Linux ARM64:  ${SHA_LINUX_ARM64:-<not available>}"
+          echo ""
 
+          # Generate formula
           export VERSION="$VERSION"
           export SHA256_DARWIN_ARM64="$SHA_DARWIN_ARM64"
           export SHA256_DARWIN_AMD64="$SHA_DARWIN_AMD64"
           export SHA256_LINUX_AMD64="$SHA_LINUX_AMD64"
-          export SHA256_LINUX_ARM64="$SHA_LINUX_ARM64"
-
-          echo "Generating formula with VERSION=$VERSION"
-          echo "  macOS ARM64: $SHA_DARWIN_ARM64"
-          echo "  macOS AMD64: $SHA_DARWIN_AMD64"
-          echo "  Linux AMD64: $SHA_LINUX_AMD64"
-          echo "  Linux ARM64: ${SHA_LINUX_ARM64:-<not available>}"
+          export SHA256_LINUX_ARM64="${SHA_LINUX_ARM64:-}"
 
           ruby Formula/generate.rb
+          echo "✓ Formula generated"
 
       - name: Check for changes
         id: check
         run: |
           if git diff --quiet Formula/tingly-box.rb; then
             echo "changed=false" >> $GITHUB_OUTPUT
+            echo "⚠ No changes detected - formula already up to date"
           else
             echo "changed=true" >> $GITHUB_OUTPUT
+            echo "✓ Formula changes detected"
           fi
 
-      - name: Commit and push
-        if: steps.check.outputs.changed == 'true'
+      - name: Create PR
+        if: steps.check.outputs.changed == 'true' && inputs.create_pr == 'true'
+        run: |
+          BRANCH="formula-update-${{ steps.release.outputs.tag }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Create branch
+          git checkout -b "$BRANCH"
+
+          # Commit changes
+          git add Formula/tingly-box.rb
+          git commit -m "Update formula to ${{ steps.release.outputs.tag }}"
+
+          # Push branch
+          git push --repo=https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/tingly-dev/homebrew-tingly.git -u "$BRANCH"
+
+          # Create PR
+          gh pr create \
+            --title "Update formula to ${{ steps.release.outputs.tag }}" \
+            --body "Automated formula update for release ${{ steps.release.outputs.tag }}" \
+            --base main
+          echo "✓ Pull request created: $BRANCH"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Direct commit
+        if: steps.check.outputs.changed == 'true' && inputs.create_pr != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Formula/tingly-box.rb
           git commit -m "Update formula to ${{ steps.release.outputs.tag }}"
-          gh repo set-default tingly-dev/homebrew-tingly
           git push --repo=https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/tingly-dev/homebrew-tingly.git
+          echo "✓ Formula updated and pushed"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create release (if PR)
+        if: steps.check.outputs.changed == 'true' && inputs.create_pr == 'true'
+        run: |
+          echo ""
+          echo "To complete the update:"
+          echo "  1. Review the pull request"
+          echo "  2. Merge when ready"
+          echo ""
+          gh pr view --web
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
