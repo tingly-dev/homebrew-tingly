@@ -5,31 +5,35 @@
 class TinglyBox < Formula
   desc "Local AI intelligence layer - autonomous AI model proxy and orchestrator"
   homepage "https://github.com/tingly-dev/tingly-box"
-  version "v0.260415.1045-hotfix"
+  version "v0.260507.1"
 
   # depends_on "unzip" => :build
 
   on_macos do
     on_arm do
-      url "https://github.com/tingly-dev/tingly-box/releases/download/v0.260415.1045-hotfix/tingly-box-macos-arm64.zip"
-      sha256 "30fe26f81d7b10ec6c37d984aad6d20daa9a544d5d9ab613057080d4dcdf19c4"
+      url "https://github.com/tingly-dev/tingly-box/releases/download/v0.260507.1/tingly-box-macos-arm64.zip"
+      sha256 "  Downloading macos-arm64... ✓
+1b2d27e81c7887764dbf4f3a604cd4c88b8d5050143fe8b83b58b74a024b7bed"
     end
 
     on_intel do
-      url "https://github.com/tingly-dev/tingly-box/releases/download/v0.260415.1045-hotfix/tingly-box-macos-amd64.zip"
-      sha256 "71328f27c9e43cd57bdf076373fd297076095826aaa6d95d96b26f55b54889d8"
+      url "https://github.com/tingly-dev/tingly-box/releases/download/v0.260507.1/tingly-box-macos-amd64.zip"
+      sha256 "  Downloading macos-amd64... ✓
+8e5d5a8d6069555325f21a77f18059a1dce784f1a7218476d88da37cd0565f39"
     end
   end
 
   on_linux do
     on_intel do
-      url "https://github.com/tingly-dev/tingly-box/releases/download/v0.260415.1045-hotfix/tingly-box-linux-amd64.zip"
-      sha256 "4dca7e5eb65136a7c0ffbf672e09bb91246d5e07e3884ff87212e1caa01cecf8"
+      url "https://github.com/tingly-dev/tingly-box/releases/download/v0.260507.1/tingly-box-linux-amd64.zip"
+      sha256 "  Downloading linux-amd64... ✓
+b87f24c6ae23a772fd6d1330a5b534a46305978e0e52b64022543b21f006394c"
     end
 
     on_arm do
-      url "https://github.com/tingly-dev/tingly-box/releases/download/v0.260415.1045-hotfix/tingly-box-linux-arm64.zip"
-      sha256 "38e245fffd8a29dcbb511b0f88e6de318e1afcfd3461266ea9d1492f8d83a9ce"
+      url "https://github.com/tingly-dev/tingly-box/releases/download/v0.260507.1/tingly-box-linux-arm64.zip"
+      sha256 "  Downloading linux-arm64... ✓
+ffdd07a4a957b2a54da732c34e801623baeddfc73eaee114dc4fe36c8e15e9cb"
     end
   end
 
